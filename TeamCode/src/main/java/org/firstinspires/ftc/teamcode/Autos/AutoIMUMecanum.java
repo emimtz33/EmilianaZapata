@@ -33,8 +33,10 @@ public class AutoIMUMecanum extends LinearOpMode{
 
 
         //Invertir motores para girar en el mismo sentido
-        frenteDerecho.setDirection(DcMotorSimple.Direction.FORWARD);
-        atrasDerecho.setDirection(DcMotorSimple.Direction.REVERSE);
+        frenteDerecho.setDirection(DcMotorSimple.Direction.REVERSE);
+        atrasDerecho.setDirection(DcMotorSimple.Direction.FORWARD);
+        frenteIzquierdo.setDirection(DcMotorSimple.Direction.FORWARD);
+        atrasIzquierdo.setDirection(DcMotorSimple.Direction.FORWARD);
 
 
         imu = hardwareMap.get(IMU.class, "imu");
@@ -54,29 +56,36 @@ public class AutoIMUMecanum extends LinearOpMode{
 
         //Inicializar IMU
         imu.initialize(
-                new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                        RevHubOrientationOnRobot.UsbFacingDirection.FORWARD))
+                new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.FORWARD,
+                        RevHubOrientationOnRobot.UsbFacingDirection.UP))
         );
 
         waitForStart();
 
         while(opModeIsActive()){
-            giroAngulo(180);
-            sleep(3000);
-            avanzarRecto(0.7,8);
-            sleep(3000);
-            giroAngulo(270);
-            sleep(3000);
-            avanzarRecto(0.7,8);
-            sleep(3000);
-            giroAngulo(0);
-            sleep(3000);
-            avanzarRecto(0.7,8);
-            sleep(3000);
-            giroAngulo(90);
-            sleep(3000);
-            avanzarRecto(0.7,8);
-            sleep(3000);
+//            giroAngulo(180);
+//            sleep(3000);
+//            avanzarRecto(0.4,100);
+//            sleep(3000);
+//            giroAngulo(270);
+//            sleep(3000);
+//            avanzarRecto(0.7,8);
+//            sleep(3000);
+//            giroAngulo(0);
+//            sleep(3000);
+//            avanzarRecto(0.7,8);
+//            sleep(3000);
+//            giroAngulo(90);
+//            sleep(3000);
+//            avanzarRecto(0.7,8);
+//            sleep(3000);
+            telemetry.addData("Angulo", frenteIzquierdo.getCurrentPosition());
+            telemetry.addData("Heading: ", obtenerAngulo());
+            telemetry.addData("FI", frenteIzquierdo.getCurrentPosition());
+            telemetry.addData("FD", frenteDerecho.getCurrentPosition());
+            telemetry.addData("AD", atrasDerecho.getCurrentPosition());
+            telemetry.addData("AI", atrasIzquierdo.getCurrentPosition());
+            telemetry.update();
             break;
         }
     }
@@ -139,7 +148,7 @@ public class AutoIMUMecanum extends LinearOpMode{
         double targetAngle = obtenerAngulo();
         double kp = 0.015;
         // Calcular ticks necesarios (ajusta según tus motores y ruedas)
-        double ticksPorVuelta = 336;
+        double ticksPorVuelta = 273;
         double diametroRuedaCM = 7.5;
         double ticksPorCM = ticksPorVuelta / (Math.PI * diametroRuedaCM); //28.88
         int ticksObjetivo = (int)(distanciaCM * ticksPorCM);
@@ -155,11 +164,6 @@ public class AutoIMUMecanum extends LinearOpMode{
         atrasIzquierdo.setTargetPosition(ticksObjetivo);
         atrasDerecho.setTargetPosition(ticksObjetivo);
 
-        frenteIzquierdo.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frenteDerecho.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        atrasIzquierdo.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        atrasDerecho.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
         frenteIzquierdo.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         frenteDerecho.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         atrasIzquierdo.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -170,41 +174,42 @@ public class AutoIMUMecanum extends LinearOpMode{
         atrasIzquierdo.setPower(poder);
         atrasDerecho.setPower(poder);
 
+        frenteIzquierdo.getCurrentPosition();
+
+
+
+        while (opModeIsActive() &&
+                (frenteIzquierdo.isBusy() ||  frenteDerecho.isBusy() ||
+                atrasIzquierdo.isBusy()  ||  atrasDerecho.isBusy())) {
+
+            double error = obtenerError(targetAngle);
+            double correction = error * kp;
+
+            // Limitar la corrección para evitar sobresaturación
+            correction = Math.max(Math.min(correction, 0.3), -0.3);
+
+            // Aplicar corrección (izquierda o derecha)
+            frenteIzquierdo.setPower(poder + correction);
+            frenteDerecho.setPower(poder - correction);
+            atrasIzquierdo.setPower(poder + correction);
+            atrasDerecho.setPower(poder - correction);
+
+            telemetry.addData("Angulo", frenteIzquierdo.getCurrentPosition());
+            telemetry.addData("Error", error);
+            telemetry.addData("Corrección", correction);
+            telemetry.addData("Heading: ", obtenerAngulo());
+            telemetry.addData("FI", frenteIzquierdo.getCurrentPosition());
+            telemetry.addData("FD", frenteDerecho.getCurrentPosition());
+            telemetry.addData("AD", atrasDerecho.getCurrentPosition());
+            telemetry.addData("AI", atrasIzquierdo.getCurrentPosition());
+            telemetry.update();
+        }
+
         poderMotor(0);
         frenteIzquierdo.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frenteDerecho.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         atrasIzquierdo.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         atrasDerecho.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-//        while (opModeIsActive() &&
-//                Math.abs(frenteIzquierdo.getCurrentPosition()) < ticksObjetivo &&
-//                Math.abs(frenteDerecho.getCurrentPosition()) < ticksObjetivo &&
-//                Math.abs(atrasIzquierdo.getCurrentPosition()) < ticksObjetivo &&
-//                Math.abs(atrasDerecho.getCurrentPosition()) < ticksObjetivo) {
-//
-//            double error = obtenerError(targetAngle);
-//            double correction = error * kp;
-//
-//            // Limitar la corrección para evitar sobresaturación
-//            correction = Math.max(Math.min(correction, 0.3), -0.3);
-//
-//            // Aplicar corrección (izquierda o derecha)
-//            frenteIzquierdo.setPower(poder + correction);
-//            frenteDerecho.setPower(poder - correction);
-//            atrasIzquierdo.setPower(poder + correction);
-//            atrasDerecho.setPower(poder - correction);
-//
-//            telemetry.addData("Error", error);
-//            telemetry.addData("Corrección", correction);
-//            telemetry.addData("Heading: ", obtenerAngulo());
-//            telemetry.addData("FI", frenteIzquierdo.getCurrentPosition());
-//            telemetry.addData("FD", frenteDerecho.getCurrentPosition());
-//            telemetry.addData("AD", atrasDerecho.getCurrentPosition());
-//            telemetry.addData("AI", atrasIzquierdo.getCurrentPosition());
-//            telemetry.update();
-//        }
-//
-//        poderMotor(0);
     }
 
     //Funciones de giro
