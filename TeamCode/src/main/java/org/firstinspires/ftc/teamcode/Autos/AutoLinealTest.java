@@ -1,5 +1,4 @@
-package org.firstinspires.ftc.teamcode.Autos;
-import com.acmerobotics.dashboard.FtcDashboard;
+package org.firstinspires.ftc.teamcode.Projectos;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -12,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 @Autonomous(name = "Auto IMU by Raúl", group = "Tests")
-public class AutoLinealTest extends LinearOpMode {
+public class Autonomo extends LinearOpMode {
 
     //To-Do
     //Tomar el angulo inicial de la IMU y utilizarlo para el resto del codigo (sumar y restar al valor inicial)
@@ -24,7 +23,6 @@ public class AutoLinealTest extends LinearOpMode {
 
     CRServo intakeServo1, intakeServo2, chooserServoR, chooserServoL, regulationServo;
 
-    FtcDashboard dashboard = FtcDashboard.getInstance();
     public IMU imu;
 
     @Override
@@ -226,23 +224,22 @@ public class AutoLinealTest extends LinearOpMode {
 
     //Funcion de intake
     public void intake(double poderIntake) {
-        intakeServo1.setPower(poderIntake);
-        intakeServo2.setPower(poderIntake);
+        intakeServo1.setPower(-(poderIntake));
     }
 
     public void shooter(double shooterPower,double chooserServoPowerR, double chooserServoPowerL) {
         double regulatorServoPower = 0;
+
+        shooterR.setPower(shooterPower);
+        shooterL.setPower(shooterPower);
+        chooserServoL.setPower(chooserServoPowerL);
+        chooserServoR.setPower(chooserServoPowerR);
 
         double shooterVelocityR = shooterR.getVelocity();
         double shooterVelocityL = shooterL.getVelocity();
         double soltureR = shooterR.getVelocity();
         double soltureL = shooterL.getVelocity();
         double diference = soltureL - soltureR;
-
-        shooterR.setPower(shooterPower);
-        shooterL.setPower(shooterPower);
-        chooserServoL.setPower(chooserServoPowerL);
-        chooserServoR.setPower(chooserServoPowerR);
 
         regulationServo.setPower(regulatorServoPower);
 
@@ -261,25 +258,6 @@ public class AutoLinealTest extends LinearOpMode {
     }
 
     //Funciones de giro
-    public void enfrente(double poder) {
-        leftDrive.setPower(poder);
-        rightDrive.setPower(poder);
-    }
-
-    public void atras(double poder) {
-        leftDrive.setPower(-poder);
-        rightDrive.setPower(-poder);
-    }
-
-    public void derecha(double poder) {
-        leftDrive.setPower(poder);
-        rightDrive.setPower(-poder);
-    }
-
-    public void izquierda(double poder) {
-        leftDrive.setPower(-poder);
-        rightDrive.setPower(poder);
-    }
 
     public void poderMotor(double poder) {
         leftDrive.setPower(poder);
