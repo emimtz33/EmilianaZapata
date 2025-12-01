@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Projectos;
+package org.firstinspires.ftc.teamcode.Autos;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -10,8 +10,8 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@Autonomous(name = "Auto IMU by Raúl", group = "Tests")
-public class Autonomo extends LinearOpMode {
+@Autonomous(name = "Auto Lineal by Mii", group = "Tests")
+public class AutoLinealTest extends LinearOpMode {
 
     //To-Do
     //Tomar el angulo inicial de la IMU y utilizarlo para el resto del codigo (sumar y restar al valor inicial)
@@ -51,14 +51,12 @@ public class Autonomo extends LinearOpMode {
 
         // Creacion de servo
         intakeServo1 = hardwareMap.get(CRServo.class, "in1"); //Primera llanta elastica
-        intakeServo2 = hardwareMap.get(CRServo.class, "in2"); //Segunda llanta elastica
         chooserServoR = hardwareMap.get(CRServo.class, "a2"); // Llanta roja diamante derecha
         chooserServoL = hardwareMap.get(CRServo.class, "a1"); //Llanta roja diamante izquierda
         regulationServo = hardwareMap.get(CRServo.class, "x"); //Llanta negra
 
         // Servo direction configuration
         intakeServo1.setDirection(CRServo.Direction.REVERSE);
-        intakeServo2.setDirection(CRServo.Direction.REVERSE);
         chooserServoR.setDirection(CRServo.Direction.FORWARD);
         chooserServoL.setDirection(CRServo.Direction.REVERSE);
         regulationServo.setDirection(CRServo.Direction.REVERSE);
@@ -87,20 +85,24 @@ public class Autonomo extends LinearOpMode {
 
         while (opModeIsActive()) {
             telemetry.addData("Heading1", obtenerAngulo());
+            esperarAuto(1);
+            avanzarRecto(0.6,210);
+            esperarAuto(1);
+            giroAngulo(-50);
+            esperarAuto(1);
+            avanzarRecto(0.4,95);
+            esperarAuto(1);
+            intake(0.8);
+            shooter(1380,0.8);
             esperarAuto(3);
-            giroAngulo(0);
-            esperarAuto(3);
-            giroAngulo(90);
-            esperarAuto(4);
-            giroAngulo(0);
-            esperarAuto(4);
-            giroAngulo(270);
-            esperarAuto(4);
-            giroAngulo(180);
-            esperarAuto(2);
+            intake(0);
+            shooter(0,0);
+            esperarAuto(1);
+            retrocederRecto(0.2,20);
             break;
         }
     }
+
 
     // Creación de funciones adicionales //
 
@@ -222,18 +224,74 @@ public class Autonomo extends LinearOpMode {
         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
+    public void retrocederRecto(double poder, double distanciaCM) {
+        double targetAngle = obtenerAngulo();
+        double kp = 0.015;
+        // Calcular ticks necesarios (ajusta según tus motores y ruedas)
+        double ticksPorVuelta = 280;
+        double diametroRuedaCM = 9.2;
+        double ticksPorCM = ticksPorVuelta / (Math.PI * diametroRuedaCM); //28.88
+        int ticksObjetivo = (int) (distanciaCM * ticksPorCM);
+
+        // Resetear encoders y configurar modo
+        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        leftDrive.setTargetPosition(ticksObjetivo);
+        rightDrive.setTargetPosition(ticksObjetivo);
+
+        leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        leftDrive.setPower(-poder);
+        rightDrive.setPower(-poder);
+
+        leftDrive.getCurrentPosition();
+        leftDrive.getDirection();
+        rightDrive.getDirection();
+
+        while (opModeIsActive() &&
+                Math.abs(leftDrive.getCurrentPosition()) < ticksObjetivo &&
+                Math.abs(rightDrive.getCurrentPosition()) < ticksObjetivo) {
+
+            double error = obtenerError(targetAngle);
+            double correction = error * kp;
+
+            // Limitar la corrección para evitar sobresaturación
+            correction = Math.max(Math.min(correction, 0.3), -0.3);
+
+            // Aplicar corrección (izquierda o derecha)
+            leftDrive.setPower(poder + correction);
+            rightDrive.setPower(poder - correction);
+
+            telemetry.addData("Angulo", leftDrive.getCurrentPosition());
+            telemetry.addData("DireccionMotorIzquierdo", leftDrive.getDirection());
+            telemetry.addData("DireccionMotorDerecho", rightDrive.getDirection());
+            telemetry.addData("Error", error);
+            telemetry.addData("Corrección", correction);
+            telemetry.addData("Heading: ", obtenerAngulo());
+            telemetry.addData("L", leftDrive.getCurrentPosition());
+            telemetry.addData("R", rightDrive.getCurrentPosition());
+            telemetry.update();
+        }
+
+        poderMotor(0);
+        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
     //Funcion de intake
     public void intake(double poderIntake) {
         intakeServo1.setPower(-(poderIntake));
     }
 
-    public void shooter(double shooterPower,double chooserServoPowerR, double chooserServoPowerL) {
+    public void shooter(double shooterVelocity,double chooserServoPower) {
         double regulatorServoPower = 0;
 
-        shooterR.setPower(shooterPower);
-        shooterL.setPower(shooterPower);
-        chooserServoL.setPower(chooserServoPowerL);
-        chooserServoR.setPower(chooserServoPowerR);
+        shooterR.setVelocity(shooterVelocity);
+        shooterL.setVelocity(shooterVelocity);
+        chooserServoL.setPower(chooserServoPower);
+        chooserServoR.setPower(-chooserServoPower);
 
         double shooterVelocityR = shooterR.getVelocity();
         double shooterVelocityL = shooterL.getVelocity();
@@ -249,9 +307,8 @@ public class Autonomo extends LinearOpMode {
 
         //Falta telemetria
         telemetry.addData("Poder llanta Negra", regulatorServoPower);
-        telemetry.addData("Poder shooters", shooterPower);
-        telemetry.addData("Poder Chooser Servo Derecho", chooserServoPowerR);
-        telemetry.addData("Poder Chooser Servo Izquierdo", chooserServoPowerL);
+        telemetry.addData("Poder shooters", shooterVelocity);
+        telemetry.addData("Poder Chooser Servo", chooserServoPower);
         telemetry.addData("Velocidad shooter derecho", shooterVelocityR);
         telemetry.addData("Velocidad shooter izquierdo", shooterVelocityL);
         telemetry.update();

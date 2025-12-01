@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 
 
-@TeleOp(name = "Purple Spark Robot Code")
+@TeleOp(name = "Test Robot Code")
 
 public class CombinedRobotCode extends LinearOpMode {
 
