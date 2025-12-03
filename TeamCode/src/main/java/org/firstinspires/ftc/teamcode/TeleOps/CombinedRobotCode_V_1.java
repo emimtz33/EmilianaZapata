@@ -16,7 +16,7 @@ import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 
 import java.util.concurrent.TimeUnit;
 
-@TeleOp(name = "Purple Spark Robot Code V1")
+@TeleOp(name = "Competition Purple Spark Robot Code ")
 public class CombinedRobotCode_V_1 extends LinearOpMode {
 
     public IMU imu;
@@ -120,6 +120,12 @@ public class CombinedRobotCode_V_1 extends LinearOpMode {
                     intakeServoPower = 0.8;
                 } else intakeServoPower = 0;
 
+                if (gamepad2.left_bumper) {
+                    regulatorServoPower = 0.4;
+                } else {
+                    regulatorServoPower = 0;
+                }
+
 
                 //Alimentar bajo
                 if(gamepad2.right_bumper) {
@@ -142,7 +148,7 @@ public class CombinedRobotCode_V_1 extends LinearOpMode {
                 }
 
                 if(gamepad2.y){
-                    intakeServoPower = -0.8;
+                    intakeServoPower = -0.4;
                 }
 
                 // When b is pressed the right chooser wheel turns
@@ -189,12 +195,15 @@ public class CombinedRobotCode_V_1 extends LinearOpMode {
                 // Gives power to the control wheel
                 regulationServo.setPower(regulatorServoPower);
 
+                telemetry.addLine("Driver Telemetry");
                 telemetry.addData("Status", "Run Time: " + runtime.toString());
                 telemetry.addData("Velocidad Chasis", currentPower);
+                telemetry.addData("Heading", obtenerAngulo());
+                telemetry.addLine();
+                telemetry.addLine("Operator Telemetry");
                 telemetry.addData("Velocidad Shooter R", shooterR.getVelocity());
                 telemetry.addData("Velocidad Shooter L", shooterL.getVelocity());
                 telemetry.addData("Poder Shooter", shooterPower);
-                telemetry.addData("Heading", obtenerAngulo());
                 telemetry.update();
 
             }

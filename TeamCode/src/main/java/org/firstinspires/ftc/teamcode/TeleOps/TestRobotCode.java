@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import java.util.concurrent.TimeUnit;
@@ -12,9 +13,9 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.internal.system.Deadline;
 
 
-@TeleOp(name = "Purple Spark Robot Code OBSOLETE")
+@TeleOp(name = "Test Robot Code")
 
-public class PurpleSparkCode extends LinearOpMode {
+public class TestRobotCode extends LinearOpMode {
 
 
     private ElapsedTime runtime = new ElapsedTime();
@@ -44,8 +45,12 @@ public class PurpleSparkCode extends LinearOpMode {
         double currentPower = lowPower;
 
         //Motor variable creation
-        DcMotor shooterR = hardwareMap.get(DcMotor.class,"d1");
-        DcMotor shooterL = hardwareMap.get(DcMotor.class,"d2");
+        DcMotorEx shooterR = (DcMotorEx) hardwareMap.get(DcMotor.class, "d1");
+        DcMotorEx shooterL = (DcMotorEx) hardwareMap.get(DcMotor.class, "d2");
+
+
+        shooterR.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        shooterL.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         //Motor direction configuration
         shooterR.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -110,9 +115,14 @@ public class PurpleSparkCode extends LinearOpMode {
             // When the right trigger is pressed the shooter and control wheel turn on
             if (gamepad1.right_trigger > 0.1){
                 shooterPower = 0.8;
+                chooserServoPowerR = 0.8;
+                chooserServoPowerL = 0.8;
+                shooterPower = 1380;
 
             }else {regulatorServoPower = 0;
-                    shooterPower = 0;}
+                    shooterPower = 0;
+                    chooserServoPowerR = 0;
+                    chooserServoPowerL = 0;}
 
             if(gamepad1.y){
                 intakeServoPower = -0.8;
@@ -123,8 +133,7 @@ public class PurpleSparkCode extends LinearOpMode {
                 chooserServoPowerR = 0.8;
                 chooserServoPowerL = -0.8;
                 intakeServoPower = 0.8;
-            }else {chooserServoPowerR = 0;
-                    chooserServoPowerL = 0;}
+            }
 
             // When x is pressed the left chooser wheel turns
             if (gamepad1.x){
@@ -133,6 +142,16 @@ public class PurpleSparkCode extends LinearOpMode {
                 intakeServoPower = 0.8;
             }
 
+            double shooterVelocityR = shooterR.getVelocity();
+            double shooterVelocityL = shooterL.getVelocity();
+            double soltureR = shooterR.getVelocity();
+            double soltureL = shooterL.getVelocity();
+            double difernce = soltureL - soltureR;
+
+
+            if(shooterVelocityL > 1350 && shooterVelocityR > 1350 && difernce < 10 && difernce > -10){
+                regulatorServoPower = 0.8;
+            }
 
             // Gives power to the intake
             intakeServo1.setPower(intakeServoPower);
@@ -143,22 +162,18 @@ public class PurpleSparkCode extends LinearOpMode {
             chooserServoR.setPower(chooserServoPowerR);
 
             // Gives power to the shooter
-            shooterR.setPower(shooterPower);
-            shooterL.setPower(shooterPower);
+            shooterR.setVelocity(shooterPower);
+            shooterL.setVelocity(shooterPower);
 
             // Gives power to the control wheel
             regulationServo.setPower(regulatorServoPower);
 
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Velocidad Chasis", currentPower);
+            telemetry.addData("Velocidad Shooter R", shooterR.getVelocity());
+            telemetry.addData("Velocidad Shooter L", shooterL.getVelocity());
             telemetry.update();
-            
-            if (gamepad1.right_trigger > 0.4){
-                sleep(1000);
-            if (shooterPower == 0.8){
-                regulatorServoPower = 0.8;
-            }}
+
         }
     }
-
 }
