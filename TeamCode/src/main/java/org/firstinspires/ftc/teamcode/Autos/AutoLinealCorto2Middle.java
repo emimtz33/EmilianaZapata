@@ -11,8 +11,8 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@Autonomous(name = "Competition Auto Lineal Corto by Emiliano", group = "Tests")
-public class AutoLinealCorto2 extends LinearOpMode {
+@Autonomous(name = "Competition Auto Lineal Corto 2 by Emiliano", group = "Tests")
+public class AutoLinealCorto2Middle extends LinearOpMode {
 
     //To-Do
     //Tomar el angulo inicial de la IMU y utilizarlo para el resto del codigo (sumar y restar al valor inicial)
@@ -22,7 +22,7 @@ public class AutoLinealCorto2 extends LinearOpMode {
 
     DcMotorEx shooterR, shooterL;
 
-    CRServo intakeServo1, intakeServo2, chooserServoR, chooserServoL, regulationServo;
+    CRServo intakeServo1, chooserServoR, chooserServoL, regulationServo;
 
     public IMU imu;
 
@@ -110,7 +110,7 @@ public class AutoLinealCorto2 extends LinearOpMode {
             giroAngulo(-50);
             esperarAuto(1);
 
-            retrocederRecto(0.8,22);
+            retrocederRecto(0.8,52);
             esperarAuto(0.2);
 
             giroAngulo(-130);
@@ -135,7 +135,7 @@ public class AutoLinealCorto2 extends LinearOpMode {
             giroAngulo(-50);
             esperarAuto(0.5);
 
-            avanzarRecto(0.8,16);
+            avanzarRecto(0.8,52);
             esperarAuto(0.2);
 
             giroAngulo(0);

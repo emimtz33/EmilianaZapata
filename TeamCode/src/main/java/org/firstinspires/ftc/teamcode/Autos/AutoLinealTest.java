@@ -112,6 +112,8 @@ public class AutoLinealTest extends LinearOpMode {
             giroAngulo(-80);
             esperarAuto(1);
             intake(0.8);
+            regulationServo.setPower(regulatorServoPowerLOW);
+            esperarAuto(0.1);
             retrocederRecto(0.1,50);
             esperarAuto(4);
             intake(0);

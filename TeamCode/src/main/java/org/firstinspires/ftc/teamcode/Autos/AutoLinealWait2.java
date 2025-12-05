@@ -11,8 +11,8 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@Autonomous(name = "Competition Auto Lineal Corto by Emiliano", group = "Tests")
-public class AutoLinealCorto2 extends LinearOpMode {
+@Autonomous(name = "Competition Auto Lineal Wait 2 by Emiliano", group = "Tests")
+public class AutoLinealWait2 extends LinearOpMode {
 
     //To-Do
     //Tomar el angulo inicial de la IMU y utilizarlo para el resto del codigo (sumar y restar al valor inicial)
@@ -88,62 +88,42 @@ public class AutoLinealCorto2 extends LinearOpMode {
 
         while (opModeIsActive()) {
             telemetry.addData("Heading1", obtenerAngulo());
-
-            esperarAuto(0.2);
-            retrocederRecto(0.8,40);
-            esperarAuto(0.2);
-
+            esperarAuto(10);
+            avanzarRecto(0.8,170);
+            esperarAuto(1);
+            giroAngulo(-50);
+            esperarAuto(1);
+            avanzarRecto(0.7,70);
+            esperarAuto(1);
+            intake(0.8);
             shooter(1880,0.8);
             esperarAuto(0.5);
             regulationServo.setPower(regulatorServoPowerON);
-            intake(0.8);
-            esperarAuto(5.5);
-
+            esperarAuto(5);
             intake(0);
             shooter(0,0);
             regulationServo.setPower(regulatorServoPowerOFF);
-            esperarAuto(0.2);
-
-            retrocederRecto(0.8,60);
-            esperarAuto(0.3);
-
-            giroAngulo(-50);
+            esperarAuto(0.5);
+            retrocederRecto(0.2,50);
             esperarAuto(1);
+            giroAngulo(0);
+            esperarAuto(1);
+            retrocederRecto(0.6,90);
+            esperarAuto(1);
+            
 
-            retrocederRecto(0.8,22);
-            esperarAuto(0.2);
-
-            giroAngulo(-130);
-            esperarAuto(0.5);
-
-            intake(0.8);
-            regulationServo.setPower(regulatorServoPowerLOW);
+            /*avanzarRecto(0.8,45);
             esperarAuto(0.1);
-            retrocederRecto(0.1,90);
-            esperarAuto(3);
-
-            regulationServo.setPower(regulatorServoPowerOFF);
-            intake(0);
-
-            esperarAuto(0.5);
-            giroAngulo(-130);
-            esperarAuto(0.2);
-
-            avanzarRecto(0.8,50);
-            esperarAuto(0.2);
-
-            giroAngulo(-50);
-            esperarAuto(0.5);
-
-            avanzarRecto(0.8,16);
-            esperarAuto(0.2);
-
+            giroAngulo(90);
+            esperarAuto(1);
+            avanzarRecto(0.8,100);
+            esperarAuto(1);
             giroAngulo(0);
             esperarAuto(0.2);
+            avanzarRecto(0.8,150);
+            esperarAuto(1);
+            */
 
-            avanzarRecto(0.8,60);
-
-            esperarAuto(0.2);
 
             break;
         }
@@ -168,7 +148,7 @@ public class AutoLinealCorto2 extends LinearOpMode {
     public void giroAngulo(double angulo) {
         double kp = 0.006;       // Ganancia proporcional (ajustable)
         double minPower = 0.07;  // Potencia mínima para vencer fricción estática
-        double tolerancia = 0.3; // Error aceptable en grados
+        double tolerancia = 0.2; // Error aceptable en grados
         //tolerancia = 0.2
 
         while (opModeIsActive()) {
