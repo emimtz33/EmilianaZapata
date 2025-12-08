@@ -1,18 +1,14 @@
-package org.firstinspires.ftc.teamcode.TeleOps;
+package org.firstinspires.ftc.teamcode.Projectos;
 
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @TeleOp(name = "BlueSpark RobotCode")
@@ -25,8 +21,6 @@ public class BlueSpark_RobotCode extends LinearOpMode {
 
         telemetry.addData("Estado", "Inicializado correctamente");
         telemetry.update();
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        Telemetry dashboardTelemetry = dashboard.getTelemetry();
 
         // Inicializar motores
         DcMotorEx leftFront = (DcMotorEx) hardwareMap.get(DcMotor.class, "leftFront");
@@ -38,17 +32,17 @@ public class BlueSpark_RobotCode extends LinearOpMode {
         imu = hardwareMap.get(IMU.class, "imu");
 
         //Initialize the hardware variables
-        DcMotorEx ShooterR = (DcMotorEx) hardwareMap.get(DcMotor.class, "shooterR");
-        DcMotorEx ShooterL = (DcMotorEx) hardwareMap.get(DcMotor.class, "shooterL");
+        DcMotorEx Shooter = (DcMotorEx) hardwareMap.get(DcMotor.class, "shooter");
         DcMotor Intake = hardwareMap.get(DcMotor.class, "intake1");
+        DcMotor Regulator = hardwareMap.get(DcMotor.class, "Regulator");
 
         // Configure robot orientation
         rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
         rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
         // Function orientations
         Intake.setDirection(DcMotorSimple.Direction.REVERSE);
-        ShooterR.setDirection(DcMotorSimple.Direction.REVERSE);
-        ShooterL.setDirection(DcMotorSimple.Direction.REVERSE);
+        Shooter.setDirection(DcMotorSimple.Direction.FORWARD);
+        Regulator.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Configure encoders
         leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -56,13 +50,10 @@ public class BlueSpark_RobotCode extends LinearOpMode {
         leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        ShooterR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        ShooterL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
         //Servo object creation
-        CRServo servoIntake;
-        servoIntake = hardwareMap.get(CRServo.class, "seervo");
 
 
         // IMU object creation
@@ -71,9 +62,6 @@ public class BlueSpark_RobotCode extends LinearOpMode {
                         RevHubOrientationOnRobot.UsbFacingDirection.LEFT))
         );
 
-        //Intake toogle
-        boolean currentStatus = false;
-        boolean previousStatus;
 
 
         waitForStart();
@@ -110,88 +98,51 @@ public class BlueSpark_RobotCode extends LinearOpMode {
 
             //OPERATOR CODE
 
-            //Intake and shooter variables
-            double powerI;
-            double powerSRight;
-            double powerSLeft;
-            double powerServo;
+            //Intake, shooter and regulator variables
+            double shooterPower;
+            double intakePower;
+            double regulatorPower;
 
+            // Shooter "if" statements
+            if(gamepad1.right_trigger < 0.1){
+                shooterPower = 2500;
+            }else shooterPower = 0;
 
-
-            double shooterLvelocity = ShooterL.getVelocity();
-            double shooterRvelocity = ShooterR.getVelocity();
-
-
-            /*boolean changed = false; //Outside of loop()
-            if(gamepad1.a && !changed) {
-
-                if(servo.getPosition() == 0) {
-                servo.setPosition(1);
-                } else {
-                servo.setPosition(0);
-                changed = true;
-            } else if(!gamepad1.a) {
-            changed = false;
-            }
-             */
-
-            //Shooter function
-            if (gamepad2.right_trigger > 0.1 || gamepad1.right_bumper) {
-                powerSRight = 2700;
-                powerSLeft = 2500;
-            } else {
-                powerSRight = 0;
-                powerSLeft = 0;
+            if(gamepad1.right_bumper){
+                shooterPower = 1700;
             }
 
-            if(gamepad2.right_bumper){
-                powerSRight = 2300;
-                powerSLeft = 2100;
+            // Intake "if" statements
+            if(gamepad1.left_trigger < 0.1){
+                intakePower = 0.8;
+            }else intakePower = 0;
+
+            if (gamepad1.left_bumper){
+                intakePower = -0.7;
             }
 
-            //Intake function
-            if(gamepad2.left_trigger > 0.1){
-                powerI = 0.8;
-            }else {
-                powerI = 0;
+            // Regulator function conditions
+            if(Shooter.getVelocity() < 2530 && Shooter.getVelocity() > 2470){
+                regulatorPower = 0.8;
+            }else regulatorPower = 0;
+
+            if (Shooter.getVelocity() < 1730 && Shooter.getVelocity() > 1670){
+                regulatorPower = 0.8;
             }
 
 
-
-            if(gamepad2.circle && !currentStatus) {
-
-            }
-
-            //Inverse orientation intake
-            if (gamepad2.triangle) {
-                powerI = -0.8;
-            }
-
-
-
-            //Servo condition creation
-            if(shooterLvelocity > 1000 && shooterRvelocity > 1000 && shooterRvelocity < 3000 && shooterLvelocity < 3000){
-                powerServo = 0.8;
-                servoIntake.setPower(powerServo);
-            } else if (gamepad2.square) {
-                powerServo = 0.8;
-            } else {
-                powerServo = 0.0;
-            }
-//Math.abs(targetVelocity - velocity) >= kEpsilon
-
-            //Give power to intake and shooter motors (and servo)
-            Intake.setPower(powerI);
-            ShooterR.setVelocity(powerSRight);
-            ShooterL.setVelocity(powerSLeft);
-            servoIntake.setPower(powerServo);
-
-            //Give power to the motors
+            //Give power to Driver motors
             leftFront.setVelocity(lFPower * 1500);
             rightFront.setVelocity(rFPower * 1500);
             leftBack.setVelocity(lBPower * 1500);
             rightBack.setVelocity(rBPower * 1500);
 
+            //Give power to Operator motors
+            Shooter.setVelocity(shooterPower);
+            Intake.setPower(intakePower);
+            Regulator.setPower(regulatorPower);
+
+            // Punishment sistem to avoid hurting Gracious Professionalism
             if(gamepad2.dpad_left){
                 gamepad1.rumbleBlips(1);
             }
@@ -203,10 +154,9 @@ public class BlueSpark_RobotCode extends LinearOpMode {
 
             //Telemetry
             telemetry.addLine("Operator Telemetry");
-            telemetry.addData("Velocidad Intake: ", Intake.getPower());
-            telemetry.addData("Servo Power", servoIntake.getPower());
-            telemetry.addData("Velocidad Shooter Izquierdo: ", shooterLvelocity);
-            telemetry.addData("Velocidad Shooter Derecho", shooterRvelocity);
+            telemetry.addData("Poder Intake: ", Intake.getPower());
+            telemetry.addData("Regulator Power", Regulator.getPower());
+            telemetry.addData("Velocidad Shooter", Shooter.getVelocity());
             telemetry.addData("Rotacion de HEX1: ", Intake.getDirection());
             telemetry.addLine();
             telemetry.addLine("Driver Telemetry");
@@ -218,22 +168,6 @@ public class BlueSpark_RobotCode extends LinearOpMode {
             telemetry.addData("IMU Heading: ", telemetryImu());
             telemetry.update();
 
-            //Dashboard Telemetria
-            dashboardTelemetry.addLine("Operator Telemetry");
-            dashboardTelemetry.addData("Velocidad Intake: ", powerI);
-            dashboardTelemetry.addData("Servo Power", powerServo);
-            dashboardTelemetry.addData("Velocidad Shooter Izquierdo: ", shooterLvelocity);
-            dashboardTelemetry.addData("Velocidad Shooter Derecho", shooterRvelocity);
-            dashboardTelemetry.addData("Rotacion de HEX1: ", Intake.getDirection());
-            dashboardTelemetry.addLine();
-            dashboardTelemetry.addLine("Driver Telemetry");
-            dashboardTelemetry.addData("Modo Lento", modoLento ? "ACTIVADO" : "Desactivado");
-            dashboardTelemetry.addData("FI Power", lFPower);
-            dashboardTelemetry.addData("FD Power", rFPower);
-            dashboardTelemetry.addData("AI Power", lBPower);
-            dashboardTelemetry.addData("AD Power", rBPower);
-            dashboardTelemetry.addData("IMU Heading: ", telemetryImu());
-            dashboardTelemetry.update();
         }
     }
 
@@ -242,3 +176,4 @@ public class BlueSpark_RobotCode extends LinearOpMode {
     }
 
 }
+
